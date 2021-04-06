@@ -1,49 +1,98 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
 {
+    private float speed = 5;
+    private Vector3 direction = Vector3.zero;
+    private Vector3 rotation = Vector3.zero;
+    private Rigidbody body;
+    private float jumpPower = 30f;
+    private bool isJumpState = false;
+    private bool isCrouchState = false;
+    private float distToGround;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        body = GetComponent<Rigidbody>();
+        distToGround = GetComponent<Collider>().bounds.extents.y;
     }
 
     // Update is called once per frame
     void Update()
     {
-        var translation = ProcessInput() * Time.deltaTime;
-        transform.Translate(translation);
+        
     }
 
-    private Vector3 ProcessInput() 
+    void FixedUpdate()
     {
-        Vector3 direction = Vector3.zero;
+        if (Physics.Raycast(transform.position, -Vector3.up, distToGround + 0.1f))
+        {
+            isJumpState = false;
+        }
+            
+        ProcessInput();
+    }
 
-        if (Input.GetKey(KeyCode.W))
+    void OnCollisionEnter(Collision col)
+    {
+        Debug.Log("Ooouuuccchh!!");
+    }
+
+    private void ProcessInput() 
+    {
+        
+        if (Input.GetKey(KeyCode.UpArrow))
         {
-            direction += Vector3.forward;
+            direction += Vector3.forward * speed;
         }
-        if (Input.GetKey(KeyCode.S))
+        if (Input.GetKey(KeyCode.DownArrow))
         {
-            direction += Vector3.back;
+            direction += Vector3.back * speed;
         }
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.LeftArrow))
         {
-            direction += Vector3.left;
+            rotation.y = -1;
         }
-        if (Input.GetKey(KeyCode.D))
+        if (Input.GetKey(KeyCode.RightArrow))
         {
-            direction += Vector3.right;
+            rotation.y = 1;
         }
 
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            direction *= 5;
+            direction *= 2;
         }
 
-        return direction;
+        // Jump
+        if (Input.GetKey(KeyCode.X) && !isJumpState)
+        {
+            body.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
+            isJumpState = true;
+            Debug.Log("Trying to jump.");
+        }
+
+        // Crouch
+        if (Input.GetKeyDown(KeyCode.C) && !isCrouchState)
+        {
+            isCrouchState = true;
+            speed /= 2;
+            transform.localScale = new Vector3(1, 1/3, 1);
+        }
+
+        if (Input.GetKeyUp(KeyCode.C) && isCrouchState)
+        {
+            isCrouchState = false;
+            speed *= 2;
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+
+        var translation = direction * Time.deltaTime;
+        transform.Translate(translation);
+        direction = Vector3.zero;
+
+        var rotationAngle = rotation * Time.deltaTime;
+        transform.Rotate(rotation);
+        rotation = Vector3.zero;
     }
 }
