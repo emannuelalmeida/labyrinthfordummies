@@ -52,11 +52,11 @@ public class PlayerScript : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            rotation.y = -1;
+            rotation.y = -2;
         }
         if (Input.GetKey(KeyCode.RightArrow))
         {
-            rotation.y = 1;
+            rotation.y = 2;
         }
 
         if (Input.GetKey(KeyCode.LeftShift))
